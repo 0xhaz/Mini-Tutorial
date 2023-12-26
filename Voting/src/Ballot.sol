@@ -106,4 +106,37 @@ contract Ballot {
     function winnerName() external view returns (bytes32 winnerName_) {
         winnerName_ = s_proposals[winningProposal()].name;
     }
+
+    function getProposalName(uint256 index) external view returns (bytes32) {
+        return s_proposals[index].name;
+    }
+
+    function getProposalVoteCount(uint256 index) external view returns (uint256) {
+        return s_proposals[index].voteCount;
+    }
+
+    function getVoterWeight(address voter) external view returns (uint256) {
+        return s_voters[voter].weight;
+    }
+
+    function getVoterVoted(address voter) external view returns (bool) {
+        return s_voters[voter].voted;
+    }
+
+    function getVoterDelegate(address voter) external view returns (address) {
+        return s_voters[voter].delegate;
+    }
+
+    function getVoterVote(address voter) external view returns (uint256) {
+        return s_voters[voter].vote;
+    }
+
+    function getProposalIndex(bytes32 proposalName) external view returns (uint256) {
+        for (uint256 i = 0; i < s_proposals.length; i++) {
+            if (s_proposals[i].name == proposalName) {
+                return i;
+            }
+        }
+        return 0;
+    }
 }

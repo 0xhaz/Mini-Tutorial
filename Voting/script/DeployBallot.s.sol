@@ -6,15 +6,14 @@ import {Ballot} from "../src/Ballot.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployBallot is Script {
-    Ballot public proposal;
-
-    bytes32[] public proposals = [bytes32("proposal1"), bytes32("proposal2")];
+    bytes32[] public proposalName = [bytes32("proposal1"), bytes32("proposal2")];
 
     function run() public returns (Ballot, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
+        helperConfig.activeNetworkConfig();
         vm.startBroadcast();
-        proposal = new Ballot(proposals);
+        Ballot ballot = new Ballot(proposalName);
         vm.stopBroadcast();
-        return (proposal, helperConfig);
+        return (ballot, helperConfig);
     }
 }
