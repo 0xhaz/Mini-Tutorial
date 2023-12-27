@@ -14,6 +14,7 @@ contract BallotTest is Test {
 
     address public voter1 = makeAddr("voter1");
     address public voter2 = makeAddr("voter2");
+    address public voter3 = makeAddr("voter3");
     bytes32 public proposal1 = bytes32("proposal1");
     bytes32 public proposal2 = bytes32("proposal2");
 
@@ -95,6 +96,38 @@ contract BallotTest is Test {
         assertEq(ballot.getVoterWeight(voter1), 1);
         assertEq(ballot.getVoterWeight(voter2), 2);
     }
+
+    function test_Reverts_If_Voter_Has_Delegated() public {
+        vm.startPrank(msg.sender);
+        ballot.giveRightToVote(voter1);
+        ballot.giveRightToVote(voter2);
+        vm.stopPrank();
+
+        vm.startPrank(voter1);
+        ballot.delegateVote(voter2);
+        vm.stopPrank();
+
+        vm.startPrank(voter1);
+        vm.expectRevert(Ballot.Ballot__AlreadyVoted.selector);
+        ballot.delegateVote(voter2);
+        vm.stopPrank();
+    }
+
+    // function test_Reverts_If_Voter_Has_No_Weight() public {
+    //     vm.startPrank(msg.sender);
+    //     ballot.giveRightToVote(voter1);
+    //     ballot.giveRightToVote(voter2);
+    //     vm.stopPrank();
+
+    //     vm.startPrank(voter1);
+    //     ballot.delegateVote(voter2);
+    //     vm.stopPrank();
+
+    //     vm.startPrank(voter1);
+    //     vm.expectRevert(Ballot.Ballot__AlreadyHasWeight.selector);
+    //     ballot.delegateVote(voter3);
+    //     vm.stopPrank();
+    // }
 
     function test_Proposals_Entered() public {
         assertEq(ballot.getProposalIndex(proposalName[0]), 0);

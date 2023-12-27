@@ -56,7 +56,7 @@ contract Ballot {
     /// Delegate your vote to the voter `to`.
     function delegateVote(address to) external {
         Voter storage sender = s_voters[msg.sender];
-        if (!sender.voted) revert Ballot__AlreadyVoted();
+        if (sender.voted) revert Ballot__AlreadyVoted();
         if (sender.weight == 0) revert Ballot__AlreadyHasWeight();
         if (to == msg.sender) revert Ballot__AlreadyDelegate();
 
