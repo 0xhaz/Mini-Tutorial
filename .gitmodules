@@ -7,3 +7,6 @@
 [submodule "MultiSig/lib/forge-std"]
 	path = MultiSig/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "MultiSig/foundry/lib/forge-std"]
+	path = MultiSig/foundry/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
