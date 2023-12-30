@@ -20,9 +20,7 @@ contract MultiSigWallet {
     uint256 private s_transactionCount;
 
     event Deposit(address indexed sender, uint256 value, uint256 balance);
-    event SubmitTransaction(
-        uint256 indexed txId, address indexed owner, address indexed destination, uint256 value, bytes data
-    );
+    event SubmitTransaction(uint256 indexed txId, address indexed owner, address indexed destination, uint256 value);
     event ApproveTransaction(uint256 indexed txId, address indexed owner);
     event ExecuteTransaction(uint256 indexed txId, address indexed destination, uint256 value, bytes data);
     event RevokeTransaction(uint256 indexed txId, address indexed owner);
@@ -57,11 +55,6 @@ contract MultiSigWallet {
 
     modifier notApproved(uint256 _txId) {
         if (s_transactions[_txId].isApproved[msg.sender]) revert MSW__AlreadyApproved();
-        _;
-    }
-
-    modifier notNull(address _address) {
-        if (_address == address(0)) revert MSW__InvalidAddressZeroOwner();
         _;
     }
 
@@ -110,7 +103,7 @@ contract MultiSigWallet {
 
         s_transactionCount++;
 
-        emit SubmitTransaction(s_transactionCount - 1, msg.sender, _to, _value, _data);
+        emit SubmitTransaction(s_transactionCount - 1, msg.sender, _to, _value);
     }
 
     function approveTransaction(uint256 _txId)
