@@ -109,7 +109,7 @@ contract MultiSigWalletTest is Test {
         multiSigWallet.submitTransaction(FUND_USER, FUND_AMOUNT, "");
     }
 
-    function test_Revert_If_Submit_Transaction_Done_By_None_Wallet_Owner() public depositedAmount {
+    function test_Revert_If_Submit_Transaction_Done_By_Non_Wallet_Owner() public depositedAmount {
         vm.prank(FUND_USER);
         vm.expectRevert(MultiSigWallet.MSW__Unauthorized.selector);
         multiSigWallet.submitTransaction(FUND_USER, FUND_AMOUNT, "");
@@ -144,6 +144,20 @@ contract MultiSigWalletTest is Test {
         vm.expectEmit(true, true, false, false);
 
         emit ApproveTransaction(0, MULTISIG_OWNER_2);
+        multiSigWallet.approveTransaction(0);
+    }
+
+    function test_Emit_Execute_Transaction() public depositedAmount {
+        vm.prank(MULTISIG_OWNER_1);
+        multiSigWallet.submitTransaction(FUND_USER, FUND_AMOUNT, "");
+
+        vm.prank(MULTISIG_OWNER_2);
+        multiSigWallet.approveTransaction(0);
+
+        vm.prank(MULTISIG_OWNER_3);
+        vm.expectEmit(true, true, false, false);
+
+        emit ExecuteTransaction(0, FUND_USER, FUND_AMOUNT, "");
         multiSigWallet.approveTransaction(0);
     }
 
