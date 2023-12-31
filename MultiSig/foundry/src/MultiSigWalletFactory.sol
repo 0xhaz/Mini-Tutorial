@@ -2,6 +2,7 @@
 pragma solidity ^0.8.22;
 
 import {MultiSigWallet} from "./MultiSigWallet.sol";
+import {console} from "forge-std/Console.sol";
 
 contract MultiSigWalletFactory {
     error MSWF__InvalidIndex();
@@ -22,6 +23,7 @@ contract MultiSigWalletFactory {
         bool msgSenderIsAnOwner;
 
         for (uint256 i; i < _owners.length; i++) {
+            // console.log("owner: %s", _owners[i]);
             _ownerToMultiSigWallets[_owners[i]].push(multiSigWallet);
             s_walletCounts[_owners[i]]++;
 
@@ -29,6 +31,7 @@ contract MultiSigWalletFactory {
                 msgSenderIsAnOwner = true;
             }
         }
+        console.log("msg.sender: %s", msg.sender);
 
         if (!msgSenderIsAnOwner) {
             revert MSWF__SenderNotAnOwner();
@@ -37,8 +40,22 @@ contract MultiSigWalletFactory {
         emit Create(address(multiSigWallet));
     }
 
-    function getWalletsByOwner(uint256 _index) external view validIndex(_index) returns (address) {
-        MultiSigWallet[] storage wallets = _ownerToMultiSigWallets[msg.sender];
-        return address(wallets[_index]);
+    function getWallet(uint256 _index) external view validIndex(_index) returns (address) {
+        MultiSigWallet[] storage multiSigWallet = _ownerToMultiSigWallets[msg.sender];
+        return address(multiSigWallet[_index]);
+    }
+
+    function getWalletOwner(address _owner) external view returns (MultiSigWallet[] memory) {
+        MultiSigWallet[] storage multiSigWallet = _ownerToMultiSigWallets[_owner];
+
+        for (uint160 i; i < multiSigWallet.length; i++) {
+            console.log("wallet: %s", address(multiSigWallet[i]));
+        }
+
+        return multiSigWallet;
+    }
+
+    function getWalletCount(address _owner) external view returns (uint256) {
+        return s_walletCounts[_owner];
     }
 }
