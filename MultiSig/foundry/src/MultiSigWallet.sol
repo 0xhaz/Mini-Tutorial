@@ -164,12 +164,20 @@ contract MultiSigWallet {
         return s_owners;
     }
 
+    function getOwnersCount() external view returns (uint256) {
+        return s_owners.length;
+    }
+
     function getnumRequired() external view returns (uint256) {
         return s_required;
     }
 
     function getTransactionCount() external view returns (uint256) {
         return s_transactionCount;
+    }
+
+    function getApproved(uint256 _txId, address _owner) external view returns (bool) {
+        return s_transactions[_txId].isApproved[_owner];
     }
 
     function getTransaction(uint256 _txId)

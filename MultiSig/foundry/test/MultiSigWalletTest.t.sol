@@ -263,12 +263,28 @@ contract MultiSigWalletTest is Test {
         assertEq(owners[2], MULTISIG_OWNER_3);
     }
 
+    function test_Get_Owners_Length() public {
+        assertEq(multiSigWallet.getOwnersCount(), 3);
+    }
+
     function test_Get_numRequired() public {
         assertEq(multiSigWallet.getnumRequired(), 2);
     }
 
     function test_Get_Transaction_Count() public {
         assertEq(multiSigWallet.getTransactionCount(), 0);
+    }
+
+    function test_Get_Transaction_Is_Approved() public depositedAmount {
+        vm.prank(MULTISIG_OWNER_1);
+        multiSigWallet.submitTransaction(FUND_USER, FUND_AMOUNT, "");
+        vm.prank(MULTISIG_OWNER_2);
+        multiSigWallet.approveTransaction(0);
+        vm.prank(MULTISIG_OWNER_3);
+        multiSigWallet.approveTransaction(0);
+        multiSigWallet.getApproved(0, MULTISIG_OWNER_3);
+
+        assertEq(multiSigWallet.getApproved(0, MULTISIG_OWNER_3), true);
     }
 
     function test_Get_Transaction() public depositedAmount {
