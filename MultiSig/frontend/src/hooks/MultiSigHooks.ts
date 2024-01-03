@@ -1,4 +1,4 @@
-import { readContract, readContracts } from "@wagmi/core";
+import { readContract } from "@wagmi/core";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "./config";
 
 export const getTransactions = async ({
