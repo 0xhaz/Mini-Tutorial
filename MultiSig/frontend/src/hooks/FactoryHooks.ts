@@ -1,4 +1,4 @@
-import { readContract } from "@wagmi/core";
+import { readContract, writeContract } from "@wagmi/core";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "./config";
 
 export const getWallets = async (account: `0x${string}` | undefined) => {
