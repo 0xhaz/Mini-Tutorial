@@ -9,7 +9,7 @@ const DashboardContent = styled(Box)(({ theme }) => ({
   justifyContent: "center",
   height: "3rem",
   width: "95%",
-  backgroundColor: theme.palette.background.default,
+  backgroundColor: theme.palette.grey[800],
   color: theme.palette.primary[400],
   cursor: "pointer",
   borderRadius: "0.5rem",

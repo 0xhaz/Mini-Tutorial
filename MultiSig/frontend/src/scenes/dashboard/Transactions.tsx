@@ -1,14 +1,26 @@
+import { useState, useEffect } from "react";
+import { Box, Button, Typography, Dialog } from "@mui/material";
 import DashboardBox from "../../components/DashboardBox";
 import BoxHeader from "../../components/BoxHeader";
-import Spinner from "../../components/Spinner";
+import TransactionModal from "../../modals/TransactionModal";
 import TransactionContent from "../../components/TransactionContent";
 
 type Props = {};
 
 const Transactions = (props: Props) => {
+  const [open, setOpen] = useState(false);
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
     <>
-      <DashboardBox gridArea="b">
+      <DashboardBox gridArea="b" position="relative">
         <BoxHeader title="Transactions" />
         <TransactionContent
           executed={true}
@@ -18,6 +30,29 @@ const Transactions = (props: Props) => {
           value="0.0001"
           data="0x"
         />
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "flex-end",
+            height: "100%",
+            position: "absolute",
+            bottom: "1rem",
+            left: "62%",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            focusRipple
+            onClick={handleClick}
+          >
+            + New Transaction
+          </Button>
+        </Box>
+
+        <Dialog open={open} onClose={handleClose}>
+          <TransactionModal />
+        </Dialog>
       </DashboardBox>
     </>
   );

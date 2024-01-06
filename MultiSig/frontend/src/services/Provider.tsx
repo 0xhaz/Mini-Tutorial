@@ -4,15 +4,31 @@ import {
   RainbowKitProvider,
   connectorsForWallets,
   darkTheme,
+  Chain,
 } from "@rainbow-me/rainbowkit";
 import {
   metaMaskWallet,
   trustWallet,
   rainbowWallet,
 } from "@rainbow-me/rainbowkit/wallets";
-import { sepolia, polygonMumbai, goerli, localhost } from "wagmi/chains";
+import { sepolia, polygonMumbai, goerli } from "wagmi/chains";
 import { infuraProvider } from "wagmi/providers/infura";
 import { publicProvider } from "wagmi/providers/public";
+
+const localhost: Chain = {
+  name: "localhost",
+  id: 31337,
+  network: "localhost", // Add the 'network' property
+  rpcUrls: {
+    public: { http: ["http://localhost:8545"] },
+    default: { http: ["http://localhost:8545"] },
+  },
+  nativeCurrency: {
+    name: "Ethereum",
+    symbol: "ETH",
+    decimals: 18,
+  },
+};
 
 const { chains, publicClient } = configureChains(
   [sepolia, polygonMumbai, goerli, localhost],

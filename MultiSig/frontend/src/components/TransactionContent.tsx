@@ -22,7 +22,7 @@ const TransactionContent = ({
 
   return (
     <Box
-      width="100%"
+      width="95%"
       padding="1rem"
       sx={{
         margin: "1.5rem auto",
@@ -35,7 +35,7 @@ const TransactionContent = ({
         width="100%"
         display="grid"
         alignItems="center"
-        padding="0 2rem"
+        padding="0 1rem"
         gap="0.3rem"
         color={palette.primary[400]}
       >
