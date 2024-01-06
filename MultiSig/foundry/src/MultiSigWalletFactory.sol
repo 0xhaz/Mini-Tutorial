@@ -45,16 +45,6 @@ contract MultiSigWalletFactory {
         return address(multiSigWallet[_index]);
     }
 
-    function getWalletOwner(address _owner) external view returns (MultiSigWallet[] memory) {
-        MultiSigWallet[] storage multiSigWallet = _ownerToMultiSigWallets[_owner];
-
-        for (uint160 i; i < multiSigWallet.length; i++) {
-            console.log("wallet: %s", address(multiSigWallet[i]));
-        }
-
-        return multiSigWallet;
-    }
-
     function getWalletCount(address _owner) external view returns (uint256) {
         return s_walletCounts[_owner];
     }

@@ -1,4 +1,4 @@
-import { readContract } from "@wagmi/core";
+import { readContract, readContracts } from "@wagmi/core";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "./config";
 
 export const getTransactions = async ({
@@ -38,7 +38,9 @@ export const getTransactions = async ({
   return data.reverse();
 };
 
-export const getOwners = async (walletAddress: `0x${string}` | undefined) => {
+export const getOwners = async (
+  walletAddress: (`0x${string}` | undefined)[]
+) => {
   if (walletAddress === undefined) return [];
 
   const walletContract = {
@@ -54,15 +56,14 @@ export const getOwners = async (walletAddress: `0x${string}` | undefined) => {
 
     if (Number(ownersCount) < 1) return [];
 
-    const batchReadCalls = new Array(Number(ownersCount)).fill(0).map((_, i) =>
-      readContract({
-        ...walletContract,
-        functionName: "getOwners",
-        args: [i],
-      })
-    );
+    const batchReadCalls = new Array(Number(ownersCount)).fill(0).map(_ => ({
+      ...walletContract,
+      functionName: "getOwners",
+    }));
 
-    const data = await Promise.all(batchReadCalls);
+    const data = await readContracts({
+      contracts: batchReadCalls as any,
+    });
 
     return data
       .filter((el: any) => el.status === "success")

@@ -1,46 +1,107 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button } from "@mui/material";
 import { useTheme } from "@mui/material";
+import { getAccount, writeContract, waitForTransaction } from "@wagmi/core";
+import { isAddress, trim } from "viem";
+import toast from "solid-toast";
 import DashboardBox from "../components/DashboardBox";
 import BoxHeader from "../components/BoxHeader";
 import TextFieldContent from "../components/TextFieldContent";
+import { FACTORY_ABI, FACTORY_ADDRESS } from "../hooks/config";
 
-type Props = {};
+type Props = {
+  close: () => void;
+  onCreate: (newWalletAddress: string, owners: string[]) => void;
+};
 
 const WalletModal = (props: Props) => {
   const { palette } = useTheme();
-  const [addressess, setAddressess] = useState<string[]>([""]);
+  const [addresses, setAddresses] = useState<string[]>([""]);
   const [signatures, setSignatures] = useState<number>(1);
+  const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
+  const [invalidAddress, setInvalidAddress] = useState<boolean>(false);
 
   const addAddress = () => {
-    setAddressess([...addressess, ""]);
+    if (addresses.length === 0) {
+      const accountAddress = getAccount().address;
+      console.log(accountAddress);
+      setAddresses([accountAddress as string]);
+    } else {
+      setAddresses([...addresses, ""]);
+    }
   };
 
   const removeAddress = (index: number) => {
-    const newAddresses = [...addressess];
-    newAddresses.splice(index, 1);
-    setAddressess(newAddresses);
+    setAddresses(addresses.filter((_, i) => i !== index));
   };
 
   const handleAddressChange = (index: number, value: string) => {
-    const newAddresses = [...addressess];
-    newAddresses[index] = value;
-    setAddressess(newAddresses);
+    const newAddresses = [...addresses];
+    newAddresses[index] = value as `0x${string}`;
+    setAddresses(newAddresses);
   };
 
   const renderAddressFields = () => {
-    return addressess.map((address, index) => (
+    return addresses.map((address, index) => (
       <TextFieldContent
         key={index}
+        id="outlined"
         label={`Address ${index + 1}`}
         variant="outlined"
-        value={address}
         sx={{
           marginTop: "1rem",
         }}
-        onChange={e => handleAddressChange(index, e.target.value)}
+        error={isDuplicate || invalidAddress}
+        helperText={
+          isDuplicate
+            ? "Duplicate address"
+            : invalidAddress
+            ? "Invalid address"
+            : ""
+        }
+        value={address}
+        onChange={e => {
+          handleAddressChange(index, e.target.value);
+        }}
       />
     ));
+  };
+
+  const handleCreate: React.MouseEventHandler<HTMLButtonElement> = async () => {
+    if (addresses.length === 0) {
+      toast.error("Please add at least one address");
+      return;
+    }
+
+    if (signatures > addresses.length) {
+      toast.error(
+        "Number of required signatures cannot be greater than the number of addresses"
+      );
+      return;
+    }
+
+    if (addresses.length > 0 && !addresses.every(isAddress)) {
+      toast.error("Please enter valid addresses");
+      return;
+    }
+
+    try {
+      const result = await writeContract({
+        address: FACTORY_ADDRESS,
+        abi: FACTORY_ABI,
+        functionName: "create",
+        args: [addresses, BigInt(signatures)],
+      });
+
+      const data = await waitForTransaction(result);
+      const walletAddress = trim(data.logs[0].topics[1]!);
+
+      props.onCreate(walletAddress, addresses);
+      props.close();
+      toast.success("Wallet created successfully");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -73,11 +134,11 @@ const WalletModal = (props: Props) => {
           Add Address
         </Button>
 
-        {addressess.length > 1 && (
+        {addresses.length > 1 && (
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => removeAddress(addressess.length - 1)}
+            onClick={() => removeAddress(addresses.length - 1)}
             sx={{ marginTop: "1rem", width: "30%", alignSelf: "center" }}
           >
             Remove Address
@@ -95,14 +156,14 @@ const WalletModal = (props: Props) => {
           inputProps={{
             min: 1,
           }}
-          onChange={() => {}}
+          onChange={e => setSignatures(parseInt(e.target.value))}
         />
 
         <Button
           variant="contained"
           color="primary"
           focusRipple
-          onClick={() => {}}
+          onClick={handleCreate}
           sx={{
             display: "flex",
             justifyContent: "center",

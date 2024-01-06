@@ -5,6 +5,7 @@ import BoxHeader from "../../components/BoxHeader";
 import DashboardContent from "../../components/DashboardContent";
 import { useAccount } from "wagmi";
 import { getWallets } from "../../hooks/FactoryHooks";
+import { getOwners } from "../../hooks/MultiSigHooks";
 import WalletModal from "../../modals/WalletModal";
 
 type Props = {};
@@ -12,7 +13,9 @@ type Props = {};
 const UserWallets = (props: Props) => {
   const { address } = useAccount();
 
-  const [account, setAccount] = useState<string | null>(null);
+  const [account, setAccount] = useState<string[]>([]);
+  const [owners, setOwners] = useState<string[]>([]);
+  const [activeAddress, setActiveAddress] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
   const handleClick = () => {
@@ -27,23 +30,37 @@ const UserWallets = (props: Props) => {
     if (!address) return;
 
     try {
-      const getAccount = async () => {
-        await getWallets(address).then(res => {
-          setAccount(res[0] as string | null);
-        });
+      const fetchAccounts = async () => {
+        const wallets = await getWallets(address);
+        setAccount(wallets as string[]);
       };
-      getAccount();
+      fetchAccounts();
     } catch (error) {
       console.log(error);
     }
   }, [address]);
 
+  const handleCreate = (newWalletAddress: string, owners: string[]) => {
+    setAccount(prevAccounts => [...prevAccounts, newWalletAddress]);
+    setActiveAddress(newWalletAddress);
+    setOwners(owners);
+    handleClose();
+  };
+
   return (
     <DashboardBox gridArea="a" position="relative">
       <BoxHeader title="Your MultiSig Wallets" />
-      <DashboardContent>
-        <Typography>{account}</Typography>
-      </DashboardContent>
+      {account.map((address, index) => (
+        <DashboardContent
+          key={index}
+          isActive={address === activeAddress}
+          onClick={() => {
+            setActiveAddress(address);
+          }}
+        >
+          <Typography>{address}</Typography>
+        </DashboardContent>
+      ))}
       <Box
         sx={{
           display: "flex",
@@ -65,7 +82,7 @@ const UserWallets = (props: Props) => {
       </Box>
 
       <Dialog open={open} onClose={handleClose}>
-        <WalletModal />
+        <WalletModal close={handleClose} onCreate={handleCreate} />
       </Dialog>
     </DashboardBox>
   );
