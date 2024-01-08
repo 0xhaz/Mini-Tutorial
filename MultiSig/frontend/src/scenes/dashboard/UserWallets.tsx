@@ -8,18 +8,21 @@ import { getWallets } from "../../hooks/FactoryHooks";
 import { getOwners } from "../../hooks/MultiSigHooks";
 import WalletModal from "../../modals/WalletModal";
 
-type Props = {};
+type Props = {
+  setActiveAddress: (address: string) => void;
+};
 
-const UserWallets = (props: Props) => {
+const UserWallets = ({ setActiveAddress }: Props) => {
   const { address } = useAccount();
 
   const [account, setAccount] = useState<string[]>([]);
   const [owners, setOwners] = useState<string[]>([]);
-  const [activeAddress, setActiveAddress] = useState<string | null>(null);
+  const [activeAddress, _] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
   const handleClick = () => {
     setOpen(true);
+    setActiveAddress(address as string);
   };
 
   const handleClose = () => {

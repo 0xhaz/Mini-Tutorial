@@ -1,4 +1,5 @@
 import { Box, useMediaQuery } from "@mui/material";
+import { useState, useEffect } from "react";
 import UserWallets from "./UserWallets";
 import Transactions from "./Transactions";
 import Owners from "./Owners";
@@ -41,6 +42,9 @@ const gridTemplateSmallScreens = `
 `;
 
 const Dashboard = () => {
+  const [activeAddress, setActiveAddress] = useState<string[] | string | null>(
+    null
+  );
   const isAboveMediumScreens = useMediaQuery("(min-width: 1200px)");
 
   return (
@@ -64,9 +68,9 @@ const Dashboard = () => {
             }
       }
     >
-      <UserWallets />
+      <UserWallets setActiveAddress={setActiveAddress} />
       <Transactions />
-      <Owners />
+      <Owners activeAddress={activeAddress} />
       <Balance />
     </Box>
   );

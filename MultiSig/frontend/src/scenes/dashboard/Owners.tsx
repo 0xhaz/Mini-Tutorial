@@ -9,12 +9,14 @@ import { useAccount } from "wagmi";
 import { getOwners } from "../../hooks/MultiSigHooks";
 import { Typography } from "@mui/material";
 
-type Props = {};
+type Props = {
+  activeAddress: string[] | string | null;
+};
 
-const Owners = (props: Props) => {
+const Owners = ({ activeAddress }: Props) => {
   const { address } = useAccount();
   const [owners, setOwners] = useState<string[]>([]);
-  const [activeAddress, setActiveAddress] = useState<string[] | null>(null);
+  const [_, setActiveAddress] = useState<string[] | null>(null);
 
   const fetchAddresses = async () => {
     const wallets = await getWallets(address);
