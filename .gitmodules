@@ -16,3 +16,6 @@
 [submodule "Staking/foundry/lib/forge-std"]
 	path = Staking/foundry/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "Staking/foundry/lib/solmate"]
+	path = Staking/foundry/lib/solmate
+	url = https://github.com/transmissions11/solmate
