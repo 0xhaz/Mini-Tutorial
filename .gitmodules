@@ -19,3 +19,6 @@
 [submodule "Staking/foundry/lib/solmate"]
 	path = Staking/foundry/lib/solmate
 	url = https://github.com/transmissions11/solmate
+[submodule "Staking/foundry/lib/openzeppelin-contracts"]
+	path = Staking/foundry/lib/openzeppelin-contracts
+	url = https://github.com/Openzeppelin/openzeppelin-contracts
