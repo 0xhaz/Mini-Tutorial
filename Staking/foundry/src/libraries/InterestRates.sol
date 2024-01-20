@@ -9,11 +9,11 @@ library InterestRates {
      * @param weiAmount The amount of wei to calculate the interest rate for
      * @return interest The interest rate for the wei amount
      */
-    function calculateInterest(uint256, /*basisPoints*/ uint256, /*numDays*/ uint256 weiAmount)
+    function calculateInterest(uint256 basisPoints, uint256 numDays, uint256 weiAmount)
         internal
         pure
         returns (uint256 interest)
     {
-        interest = weiAmount / 10000;
+        return basisPoints * weiAmount / 10000;
     }
 }

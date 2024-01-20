@@ -29,7 +29,6 @@ contract HelperConfig is Script {
     function getSepoliaConfig() public view returns (NetworkConfig memory) {
         NetworkConfig memory config;
         config.lendingPoolAddress = Constants.sepoliaNetwork().LENDINGPOOL_ADDRESS;
-
         config.wethGatewayAddress = Constants.sepoliaNetwork().WETH_GATEWAY_ADDRESS;
         config.aWethAddress = Constants.sepoliaNetwork().AWETH_ADDRESS;
 
@@ -43,16 +42,9 @@ contract HelperConfig is Script {
 
     function getAnvilConfig() public pure returns (NetworkConfig memory) {
         NetworkConfig memory config;
-        config.lendingPoolAddress = Constants.anvilNetwork().LENDINGPOOL_ADDRESS;
 
-        config.wethGatewayAddress = Constants.anvilNetwork().WETH_GATEWAY_ADDRESS;
-        config.aWethAddress = Constants.anvilNetwork().AWETH_ADDRESS;
+        config.deployerKey = DEFAULT_ANVIL_KEY;
 
-        return config = NetworkConfig({
-            lendingPoolAddress: Constants.anvilNetwork().LENDINGPOOL_ADDRESS,
-            wethGatewayAddress: Constants.anvilNetwork().WETH_GATEWAY_ADDRESS,
-            aWethAddress: Constants.anvilNetwork().AWETH_ADDRESS,
-            deployerKey: DEFAULT_ANVIL_KEY
-        });
+        return config;
     }
 }

@@ -27,12 +27,4 @@ library Constants {
             AWETH_ADDRESS: 0x5b071b590a59395fE4025A0Ccc1FcC931AAc1830
         });
     }
-
-    function anvilNetwork() internal pure returns (ExternalAddresses memory) {
-        return ExternalAddresses({
-            LENDINGPOOL_ADDRESS: address(0x1),
-            WETH_GATEWAY_ADDRESS: address(0x2),
-            AWETH_ADDRESS: address(0x4)
-        });
-    }
 }

@@ -2,19 +2,10 @@
 pragma solidity ^0.8.23;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {IPool} from "./interfaces/IPool.sol";
-import {IWrappedTokenGatewayV3} from "./interfaces/IWrappedTokenGatewayV3.sol";
-import {InterestRates} from "./libraries/InterestRates.sol";
+import {InterestRates} from "../libraries/InterestRates.sol";
+import {console} from "forge-std/Console.sol";
 
-/**
- * @title Staking Yield from AaveV3
- * @notice This contract is for creating a DeFi ETH staking dapp to generate yield from AaveV3
- * @dev This contract implements 3 different staking periods with different APYs
- * @dev This contract integrate with AaveV3 to lend for passive income generation
- * @dev The contract implements WETH Gateway to convert ETH to WETH and deposit to AaveV3
- */
-
-contract Staking {
+contract MockStaking {
     error Staking__MsgValueIsZero();
     error Staking__MappingKeyDoesNotExist();
     error Staking__NotOwner();
@@ -24,18 +15,8 @@ contract Staking {
 
     using InterestRates for uint256;
 
-    // AaveV3 Lending Pool Address
-    IPool private s_lendingPool;
-
-    // WETH Gateway Address
-    IWrappedTokenGatewayV3 private s_wethGatewayAddress;
-
-    // aWeth tokens generated after depositing ETH to AaveV3
-    address private s_aWethAddress;
-
     address private s_owner;
 
-    // Position is created after the user deposits ETH to AaveV3
     struct Position {
         uint256 positionId;
         address walletAddress; // Wallet address of the user
@@ -47,10 +28,8 @@ contract Staking {
         bool open;
     }
 
-    // Instance of the Position struct
     Position private s_position;
 
-    // Incremental ID for the position
     uint256 private s_currentPositionId;
 
     event Deposit(address indexed _from, uint256 _value);
@@ -70,8 +49,7 @@ contract Staking {
     // Array that contains integers for lock periods (30 days, 90 days, 365 days)
     uint256[] private s_lockPeriods;
 
-    // Payable to allow the deployer of the contract to send Ether when deploying
-    constructor(IPool _lendingPool, IWrappedTokenGatewayV3 _wethGatewayAddress, address _aWethAddress) payable {
+    constructor() payable {
         s_owner = msg.sender;
         s_currentPositionId = 0;
 
@@ -80,26 +58,19 @@ contract Staking {
         s_tiers[365] = 1500; // 1500 basis point = 15% APY
 
         s_lockPeriods = [30, 90, 365];
-
-        s_lendingPool = _lendingPool;
-        s_wethGatewayAddress = _wethGatewayAddress;
-        s_aWethAddress = _aWethAddress;
     }
 
-    receive() external payable {}
+    receive() external payable {
+        emit Deposit(msg.sender, msg.value);
+    }
 
-    /**
-     * @notice Function to allow user to deposit ETH funds to the contract
-     * @notice Position is created after the user deposits ETH to AaveV3
-     * @notice positionId is pushed to the s_positionIdsByAddress mapping to keep track of all position
-     * @dev the wethGatewayAddress interface take the funds from the contract and deposit to AaveV3
-     * @dev aWeth tokens are generated and balance is updated as aWeth tokens to keep track of the position
-     */
-    function stakeEther(uint256 _numDays) external payable {
+    fallback() external payable {}
+
+    function stakeEther(uint256 _numDays) external payable returns (uint256) {
         if (msg.value == 0) revert Staking__MsgValueIsZero();
         if (s_tiers[_numDays] == 0) revert Staking__MappingKeyDoesNotExist();
 
-        Position memory position = s_positions[s_currentPositionId];
+        Position storage position = s_positions[s_currentPositionId];
 
         position.positionId = s_currentPositionId;
         position.walletAddress = msg.sender;
@@ -110,47 +81,46 @@ contract Staking {
         position.weiInterest = InterestRates.calculateInterest(s_tiers[_numDays], _numDays, msg.value);
         position.open = true;
 
+        console.log("Expected Interest:", position.weiInterest);
+
         s_positionIdsByAddress[msg.sender].push(s_currentPositionId);
         s_currentPositionId++;
 
-        // Deposit ETH via WETH Gateway to AaveV3
-        s_wethGatewayAddress.depositETH{value: msg.value}(address(s_lendingPool), address(this), 0);
-
         emit Deposit(msg.sender, msg.value);
+
+        return s_currentPositionId - 1;
     }
 
-    /**
-     * @notice Function to allow user to unstake ETH funds from the contract and earn interest
-     * @notice The function can only be called by the user who created the position
-     * @notice If the user unstake before unlockDate, the user will not earn interest
-     * @dev First the WETH will be withdrawn from AaveV3 to the contract and then transfer to the user as ETH
-     * @dev wethGatewayAddress needs to be approved to burn the aWeth tokens
-     * @param _positionId The positionId of the position created by the user
-     * @notice The user then receives the ETH and the position is closed
-     */
     function withdrawPosition(uint256 _positionId) external {
         if (!s_positions[_positionId].open) revert Staking__PositionDoesNotExist();
         if (msg.sender != s_positions[_positionId].walletAddress) revert Staking__NotCreator();
 
         s_positions[_positionId].open = false;
 
-        // Withdraw ETH from AaveV3 to the contract via WETH Gateway
-        // It will convert aWeth tokens to ETH
-        // Ensure you set the relevant ERC20 allowance of aWETH, before calling the function
-        IERC20(s_aWethAddress).approve(address(s_wethGatewayAddress), type(uint256).max);
-        s_wethGatewayAddress.withdrawETH(address(s_lendingPool), s_positions[_positionId].weiStaked, address(this));
-
         // Interest won't be paid if the user unstake before unlockDate
-        if (block.timestamp > s_positions[_positionId].unlockDate) {
-            uint256 amount = s_positions[_positionId].weiStaked + s_positions[_positionId].weiInterest;
+        if (block.timestamp >= s_positions[_positionId].unlockDate) {
+            // @dev minus 1 eth for gas fee allocation
+            uint256 amount = s_positions[_positionId].weiStaked + s_positions[_positionId].weiInterest - 1e18;
+
+            console.log("Basis Points for Position:", s_positions[_positionId].percentInterest);
+            console.log("Wei Staked for Position:", s_positions[_positionId].weiStaked);
+            console.log("Wei Interest for Position:", s_positions[_positionId].weiInterest);
+            console.log("Total Amount for Position:", amount);
+            console.log("Current Date:", block.timestamp);
+
             (bool success,) = payable(msg.sender).call{value: amount}("");
             if (!success) revert Staking__TransferFailed();
+
+            console.log("Contract Balance:", address(this).balance);
+            console.log("User Balance:", address(msg.sender).balance);
+
+            emit Withdraw(msg.sender, amount);
         } else {
             (bool success,) = payable(msg.sender).call{value: s_positions[_positionId].weiStaked}("");
             if (!success) revert Staking__TransferFailed();
-        }
 
-        emit Withdraw(msg.sender, s_positions[_positionId].weiStaked);
+            emit Withdraw(msg.sender, s_positions[_positionId].weiStaked);
+        }
     }
 
     /**
@@ -192,27 +162,23 @@ contract Staking {
         return s_positions[_positionId].weiStaked;
     }
 
-    function getContractAWethBalance() external view returns (uint256) {
-        return IERC20(s_aWethAddress).balanceOf(address(this));
-    }
-
-    function getLendingPoolAddress() external view returns (IPool) {
-        return s_lendingPool;
-    }
-
-    function getAWethAddress() external view returns (address) {
-        return s_aWethAddress;
-    }
-
-    function getAWethGatewayAddress() external view returns (address) {
-        return address(s_wethGatewayAddress);
-    }
-
     function getContractOwner() external view returns (address) {
         return s_owner;
     }
 
     function getTiers() external view returns (uint256[] memory) {
         return s_lockPeriods;
+    }
+
+    function getCalculateInterest(uint256 _basisPoints, uint256 _numDays, uint256 _weiAmount)
+        external
+        pure
+        returns (uint256)
+    {
+        return InterestRates.calculateInterest(_basisPoints, _numDays, _weiAmount);
+    }
+
+    function getUserBalance() external view returns (uint256) {
+        return address(msg.sender).balance;
     }
 }
