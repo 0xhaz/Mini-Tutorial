@@ -217,4 +217,11 @@ contract StakingTest is Test {
 
         assertEq(staking.getLockPeriods(), tiers);
     }
+
+    function test_Get_Position_By_Address() public depositedAmount {
+        uint256[] memory positionIds = new uint256[](1);
+        positionIds[0] = 0;
+
+        assertEq(staking.getPositionByAddress(stakeUser), positionIds);
+    }
 }

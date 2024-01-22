@@ -20,7 +20,7 @@ const Home: NextPage = () => {
 
       <Navbar />
 
-      <main className={styles.main}>
+      <main>
         <Dashboard />
       </main>
 

@@ -184,6 +184,10 @@ contract Staking {
         return s_positions[_positionId];
     }
 
+    function getPositionByAddress(address _walletAddress) external view returns (uint256[] memory) {
+        return s_positionIdsByAddress[_walletAddress];
+    }
+
     function getCurrentPositionId() external view returns (uint256) {
         return s_currentPositionId;
     }

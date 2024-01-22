@@ -5,6 +5,8 @@ import {
   writeContract,
 } from "@wagmi/core";
 import { STAKING_ABI, STAKING_ADDRESS } from "../constants/config";
+import { calculateRemainingDays } from "./RemainingDays";
+import { formatEther } from "viem";
 
 export const getBalance = async (walletAddress: `0x${string}`) => {
   return await fetchBalance({ address: walletAddress, formatUnits: "ether" });
@@ -53,9 +55,35 @@ export const getAssets = async (
     })
   );
 
-  const positions = await Promise.all(batchReadCalls);
+  const results = await Promise.all(batchReadCalls);
 
-  return positions;
+  return results.map((result: any) => {
+    const parsedAsset = {
+      positionId: result.positionId.toString(),
+      percentInterst: Number(result.percentInterest) / 100,
+      daysRemaining: calculateRemainingDays(Number(result.unlockDate)),
+      etherInterest: formatEther(result.weiInterest),
+      etherStaked: formatEther(result.weiStaked),
+      open: result.open,
+    };
+
+    return parsedAsset;
+  });
 };
 
-export const getAssetIds = async (walletAddress: `0x${string}`) => {};
+export const getAssetIds = async (walletAddress: `0x${string}`) => {
+  if (walletAddress === undefined) return;
+
+  const stakingContract = {
+    address: STAKING_ADDRESS as `0x${string}`,
+    abi: STAKING_ABI,
+  };
+
+  const positionId = await readContract({
+    ...stakingContract,
+    functionName: "getPositionIdByAddress",
+    args: [walletAddress],
+  });
+
+  return positionId;
+};
