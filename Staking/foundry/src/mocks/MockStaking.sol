@@ -81,8 +81,6 @@ contract MockStaking {
         position.weiInterest = InterestRates.calculateInterest(s_tiers[_numDays], _numDays, msg.value);
         position.open = true;
 
-        console.log("Expected Interest:", position.weiInterest);
-
         s_positionIdsByAddress[msg.sender].push(s_currentPositionId);
         s_currentPositionId++;
 
@@ -102,17 +100,8 @@ contract MockStaking {
             // @dev minus 1 eth for gas fee allocation
             uint256 amount = s_positions[_positionId].weiStaked + s_positions[_positionId].weiInterest - 1e18;
 
-            console.log("Basis Points for Position:", s_positions[_positionId].percentInterest);
-            console.log("Wei Staked for Position:", s_positions[_positionId].weiStaked);
-            console.log("Wei Interest for Position:", s_positions[_positionId].weiInterest);
-            console.log("Total Amount for Position:", amount);
-            console.log("Current Date:", block.timestamp);
-
             (bool success,) = payable(msg.sender).call{value: amount}("");
             if (!success) revert Staking__TransferFailed();
-
-            console.log("Contract Balance:", address(this).balance);
-            console.log("User Balance:", address(msg.sender).balance);
 
             emit Withdraw(msg.sender, amount);
         } else {

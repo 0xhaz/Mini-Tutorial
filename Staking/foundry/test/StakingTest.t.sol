@@ -15,6 +15,7 @@ contract StakingTest is Test {
 
     uint256 public constant INITIAL_ETH_BALANCE = 100 ether;
     uint256 public constant STAKE_AMOUNT = 10 ether;
+    uint256 public constant GAS_FEE_ALLOC = 1 ether;
 
     uint256 public constant EXPECTED_INTEREST = 700 * (10 * 1e18) / 10000;
 
@@ -105,7 +106,7 @@ contract StakingTest is Test {
         staking.stakeEther{value: STAKE_AMOUNT}(0);
     }
 
-    function test_Withdraw_Position_Before_Unlock() public depositedAmount withdrawPosition {
+    function test_Withdraw_Position_Before_Unlock_Date() public depositedAmount withdrawPosition {
         assertEq(address(staking).balance, 0);
         assertEq(staking.getPositionById(0).open, false);
     }
@@ -113,9 +114,107 @@ contract StakingTest is Test {
     function test_Withdraw_Position_After_Unlock_Date() public afterUnlockDate {
         assertGe(block.timestamp, staking.getPositionById(0).unlockDate);
 
-        uint256 expectedBalance = STAKE_AMOUNT + EXPECTED_INTEREST - 1e18;
+        uint256 expectedBalance = STAKE_AMOUNT + EXPECTED_INTEREST - GAS_FEE_ALLOC;
 
         assertEq(staking.getPositionById(0).open, false);
-        assertEq(expectedBalance, staking.getPositionById(0).weiStaked + staking.getPositionById(0).weiInterest - 1e18);
+        assertEq(
+            expectedBalance,
+            staking.getPositionById(0).weiStaked + staking.getPositionById(0).weiInterest - GAS_FEE_ALLOC
+        );
+    }
+
+    function test_Withdraw_Emit_Events_After_Unlock_Date() public {
+        vm.startPrank(stakeUser);
+        staking.stakeEther{value: STAKE_AMOUNT}(30);
+        vm.warp(staking.getPositionById(0).createdDate + 30 days);
+        vm.roll(block.number + 1);
+
+        vm.expectEmit(true, false, false, false);
+        uint256 amount = STAKE_AMOUNT + EXPECTED_INTEREST - GAS_FEE_ALLOC;
+        emit Withdraw(stakeUser, amount);
+        staking.withdrawPosition(0);
+        vm.stopPrank();
+    }
+
+    function test_Withdraw_Emit_Events_Before_Unlock_Date() public {
+        vm.startPrank(stakeUser);
+        staking.stakeEther{value: STAKE_AMOUNT}(30);
+        vm.expectEmit(true, false, false, false);
+        emit Withdraw(stakeUser, STAKE_AMOUNT);
+        staking.withdrawPosition(0);
+        vm.stopPrank();
+    }
+
+    function test_Revert_If_Position_Does_Not_Exist() public afterUnlockDate {
+        vm.prank(stakeUser);
+        vm.expectRevert(MockStaking.Staking__PositionDoesNotExist.selector);
+        staking.withdrawPosition(0);
+    }
+
+    function test_Revert_Withdraw_If_Not_Owner() public {
+        address notOwner = address(0x3);
+        vm.startPrank(stakeUser);
+        staking.stakeEther{value: STAKE_AMOUNT}(30);
+        vm.stopPrank();
+
+        vm.prank(notOwner);
+        vm.expectRevert(MockStaking.Staking__NotCreator.selector);
+        staking.withdrawPosition(0);
+    }
+
+    function test_Set_Lock_Period() public {
+        vm.prank(owner);
+        staking.setLockPeriod(40, 1000);
+
+        assertEq(staking.getTiers()[3], 40);
+        assertEq(staking.getInterestRate(40), 1000);
+    }
+
+    function test_Lock_Period_Emit_Events() public {
+        vm.prank(owner);
+        vm.expectEmit(false, false, false, false);
+        emit NewLockPeriod(40, 1000);
+        staking.setLockPeriod(40, 1000);
+    }
+
+    function test_Revert_Lock_Period_If_Not_Owner() public {
+        address notOwner = address(0x3);
+        vm.prank(notOwner);
+        vm.expectRevert(MockStaking.Staking__NotOwner.selector);
+        staking.setLockPeriod(40, 1000);
+    }
+
+    function test_Set_Unlock_Date() public {
+        vm.prank(owner);
+        staking.setUnlockDate(0, block.timestamp + 40 days);
+
+        assertEq(staking.getPositionById(0).unlockDate, block.timestamp + 40 days);
+    }
+
+    function test_Set_Unlock_Date_Emit_Events() public {
+        vm.prank(owner);
+        vm.expectEmit(false, false, false, false);
+        emit NewUnlockDate(0, block.timestamp + 40 days);
+        staking.setUnlockDate(0, block.timestamp + 40 days);
+    }
+
+    function test_Revert_Set_Unlock_Date_If_Not_Owner() public {
+        address notOwner = address(0x3);
+        vm.prank(notOwner);
+        vm.expectRevert(MockStaking.Staking__NotOwner.selector);
+        staking.setUnlockDate(0, block.timestamp + 40 days);
+    }
+
+    function test_Get_Wei_From_Position() public depositedAmount {
+        assertEq(staking.getWeiFromPosition(0), STAKE_AMOUNT);
+    }
+
+    function test_Get_Lock_Periods() public {
+        uint256[] memory tiers = new uint256[](3);
+        tiers[0] = 30;
+        tiers[1] = 90;
+        tiers[2] = 365;
+
+        assertEq(staking.getLockPeriods(), tiers);
     }
 }
