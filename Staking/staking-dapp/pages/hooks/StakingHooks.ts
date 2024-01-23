@@ -1,9 +1,4 @@
-import {
-  fetchBalance,
-  readContract,
-  readContracts,
-  writeContract,
-} from "@wagmi/core";
+import { fetchBalance, readContract, writeContract } from "@wagmi/core";
 import { STAKING_ABI, STAKING_ADDRESS } from "../constants/config";
 import { calculateRemainingDays } from "./RemainingDays";
 import { formatEther } from "viem";
