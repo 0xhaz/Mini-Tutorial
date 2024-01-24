@@ -26,3 +26,14 @@ export const STAKING_PERIODS = [
     apy: 15,
   },
 ];
+
+export const ASSETS_STAKED = [
+  {
+    id: 1,
+    name: "ETH",
+    percentInterest: 7,
+    etherStaked: 1,
+    etherInterest: 0.07,
+    daysRemaining: 30,
+  },
+];

@@ -24,7 +24,7 @@ const StakingCards = ({ id, name, apy }: Props) => {
       sx={{
         width: 270,
         margin: "2rem auto",
-        height: "auto",
+        height: 400,
         borderRadius: "25px",
         boxShadow: "0.15rem 0.2rem 0.15rem 0.1rem rgba(0, 0, 0, 0.8)",
       }}
@@ -53,7 +53,11 @@ const StakingCards = ({ id, name, apy }: Props) => {
         <Typography gutterBottom variant="h3" component="div">
           {name}
         </Typography>
-        <Typography variant="h4" color={palette.primary.main}>
+        <Typography
+          variant="h4"
+          color={palette.secondary.main}
+          sx={{ marginTop: "0.5rem" }}
+        >
           {apy}% APY
         </Typography>
         <CardActions>
@@ -62,7 +66,7 @@ const StakingCards = ({ id, name, apy }: Props) => {
             variant="contained"
             sx={{
               padding: "0.5rem 4rem 0.5em 4rem",
-              marginTop: "1rem",
+              marginTop: "2.5rem",
               fontSize: "1rem",
               fontWeight: "500",
             }}

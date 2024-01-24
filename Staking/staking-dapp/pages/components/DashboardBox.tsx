@@ -8,7 +8,7 @@ const DashboardBox = styled(Box)(({ theme }) => ({
   width: "80%",
   margin: "1rem auto",
   padding: "0.5rem",
-  height: "800px",
+  height: "auto",
   display: "flex",
   flexDirection: "row",
   justifyContent: "space-between",

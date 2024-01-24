@@ -3,7 +3,8 @@ import LocalHotelIcon from "@mui/icons-material/LocalHotel";
 import DashboardBox from "../components/DashboardBox";
 import BoxHeader from "../components/BoxHeader";
 import StakingCards from "../cards/StakingCards";
-import { STAKING_PERIODS } from "../constants/config";
+import StakingTable from "../components/StakingTable";
+import { STAKING_PERIODS, ASSETS_STAKED } from "../constants/config";
 import { Box } from "@mui/material";
 
 type Props = {};
@@ -35,6 +36,9 @@ const Dashboard = (props: Props) => {
             apy={stakingPeriod.apy}
           />
         ))}
+      </DashboardBox>
+      <DashboardBox>
+        <StakingTable />
       </DashboardBox>
     </>
   );
