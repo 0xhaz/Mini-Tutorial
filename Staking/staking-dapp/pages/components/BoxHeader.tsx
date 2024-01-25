@@ -3,7 +3,7 @@ import FlexBetween from "./FlexBetween";
 
 type Props = {
   title: string;
-  sideText?: string;
+  sideText?: number | string;
   subtitle?: string;
   icon?: React.ReactNode;
 };

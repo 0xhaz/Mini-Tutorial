@@ -113,6 +113,7 @@ const StakingTable = ({}: Props) => {
               </TableCell>
               {columns.map(column => (
                 <TableCell
+                  key={column.id}
                   sx={{
                     display: "flex",
                     flexDirection: "column",

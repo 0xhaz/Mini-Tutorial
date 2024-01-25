@@ -15,9 +15,10 @@ type Props = {
   id: number;
   name: string;
   apy: number;
+  handleClick?: () => void;
 };
 
-const StakingCards = ({ id, name, apy }: Props) => {
+const StakingCards = ({ id, name, apy, handleClick }: Props) => {
   const { palette } = useTheme();
   return (
     <Card
@@ -70,6 +71,7 @@ const StakingCards = ({ id, name, apy }: Props) => {
               fontSize: "1rem",
               fontWeight: "500",
             }}
+            onClick={handleClick}
           >
             Stake
           </Button>

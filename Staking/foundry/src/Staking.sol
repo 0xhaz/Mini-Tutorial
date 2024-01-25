@@ -110,6 +110,7 @@ contract Staking {
         position.weiInterest = InterestRates.calculateInterest(s_tiers[_numDays], _numDays, msg.value);
         position.open = true;
 
+        s_positions[s_currentPositionId] = position;
         s_positionIdsByAddress[msg.sender].push(s_currentPositionId);
         s_currentPositionId++;
 

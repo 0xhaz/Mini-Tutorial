@@ -1,4 +1,4 @@
-export const STAKING_ADDRESS = "0xB8AAf593fc562ef953F0C8651545c45d698d7718";
+export const STAKING_ADDRESS = "0x1be9c2b488f8701Cb93CCb18544293756835355C";
 
 import { abi as StakingABI } from "../abi/StakingABI.json";
 
@@ -11,17 +11,17 @@ export const STAKING_ABI = StakingABI;
 
 export const STAKING_PERIODS = [
   {
-    id: 1,
+    id: 30,
     name: "30 days",
     apy: 7,
   },
   {
-    id: 2,
+    id: 90,
     name: "90 days",
     apy: 10,
   },
   {
-    id: 3,
+    id: 365,
     name: "365 days",
     apy: 15,
   },
